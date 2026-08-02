@@ -1,26 +1,365 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   ARSENAL — Design Tokens
+   Style:  "Modern Dark (Cinema)" x "Premium dark + action red"
+   Source: .github/prompts/ui-ux-pro-max
+           (--design-system, variance 6 / motion 5 / density 7)
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* --- Surfaces (never pure #000 — avoids OLED smear) --------------------- */
+  --bg: #08090b;
+  --bg-elev-1: #0d0f13;
+  --bg-elev-2: #13161c;
+  --bg-elev-3: #1a1e26;
+  --bg-inset: #050608;
+
+  /* --- Text -------------------------------------------------------------- */
+  --fg: #f2f4f8; /* ~16.9:1 on --bg */
+  --fg-muted: #9aa4b5; /* ~7.1:1  */
+  --fg-subtle: #6b7486; /* ~3.6:1 — large / decorative only */
+
+  /* --- Brand: action red ------------------------------------------------- */
+  --primary: #dc2626;
+  --primary-hover: #ef4444;
+  --primary-active: #b91c1c;
+  --primary-fg: #ffffff;
+  --primary-soft: rgba(220, 38, 38, 0.14);
+
+  /* --- Accent: HUD cyan (data, 3D viewport chrome) ------------------------ */
+  --accent: #22d3ee;
+  --accent-hover: #67e8f9;
+  --accent-fg: #06131a;
+  --accent-soft: rgba(34, 211, 238, 0.12);
+
+  /* --- Status ------------------------------------------------------------ */
+  --success: #34d399;
+  --warning: #fbbf24;
+  --danger: #f87171;
+
+  /* --- Lines ------------------------------------------------------------- */
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --ring: #dc2626;
+
+  /* --- Spacing rhythm — density 7/10 (standard-dense) --------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* --- Motion (tier: Standard) ------------------------------------------- */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 150ms;
+  --dur: 220ms;
+  --dur-slow: 380ms;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-elev-1: var(--bg-elev-1);
+  --color-elev-2: var(--bg-elev-2);
+  --color-elev-3: var(--bg-elev-3);
+  --color-inset: var(--bg-inset);
+
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-fg: var(--primary-fg);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+
+  --font-display: var(--font-orbitron), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
 }
+
+/* Tactical grid backdrop — decorative only. */
+.tactical-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.tactical-grid-fine {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Ambient light blobs — "Modern Dark / Cinema" signature effect. */
+.ambient-glow::before,
+.ambient-glow::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-glow::before {
+  width: 42rem;
+  height: 42rem;
+  top: -14rem;
+  left: -10rem;
+  background: rgba(220, 38, 38, 0.16);
+  animation: drift-a 22s ease-in-out infinite alternate;
+}
+
+.ambient-glow::after {
+  width: 36rem;
+  height: 36rem;
+  top: 4rem;
+  right: -12rem;
+  background: rgba(34, 211, 238, 0.1);
+  animation: drift-b 26s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(6rem, 4rem, 0);
+  }
+}
+
+@keyframes drift-b {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-5rem, 5rem, 0);
+  }
+}
+
+/* Frosted glass surface — headers and floating panels. */
+.glass {
+  background: rgba(19, 22, 28, 0.72);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid var(--border);
+}
+
+/* Hairline top highlight — machined, premium panel edge. */
+.edge-light {
+  box-shadow:
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    0 1px 2px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* HUD-style metadata label. */
+.label-hud {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fg-subtle);
+}
+
+/* ==========================================================================
+   Focus & interaction
+   ========================================================================== */
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Scrollbars
+   ========================================================================== */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.22);
+}
+
+/* ==========================================================================
+   Animation utilities
+   ========================================================================== */
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up var(--dur-slow) var(--ease-out-expo) both;
+}
+
+.animate-fade-in {
+  animation: fade-in var(--dur) var(--ease-out-expo) both;
+}
+
+.animate-scale-in {
+  animation: scale-in var(--dur) var(--ease-out-expo) both;
+}
+
+/* ==========================================================================
+   Reduced motion — full opt-out
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   Third-party overrides — React Flow (Systems graph)
+   ========================================================================== */
+
+.react-flow {
+  --xy-background-color: var(--bg-inset);
+  --xy-edge-stroke: rgba(255, 255, 255, 0.22);
+  --xy-edge-stroke-selected: var(--primary);
+  --xy-connectionline-stroke: var(--accent);
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__handle {
+  width: 9px;
+  height: 9px;
+  background: var(--bg-elev-3);
+  border: 1.5px solid var(--border-strong);
+  transition:
+    background-color var(--dur-fast) ease,
+    border-color var(--dur-fast) ease;
+}
+
+.react-flow__handle:hover,
+.react-flow__handle.connecting {
+  background: var(--primary);
+  border-color: var(--primary-hover);
+}
+
+.react-flow__controls-button {
+  background: var(--bg-elev-2);
+  border-bottom: 1px solid var(--border);
+  fill: var(--fg-muted);
+}
+
+.react-flow__controls-button:hover {
+  background: var(--bg-elev-3);
+  fill: var(--fg);
+}
+
+.react-flow__minimap {
+  background-color: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
