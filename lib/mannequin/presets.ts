@@ -285,35 +285,40 @@ function buildPresets(): PresetDefinition[] {
       ),
     },
     {
-      slug: "collar-tie-clinch",
-      name: "Collar tie clinch",
+      slug: "muay-thai-clinch",
+      name: "Muay Thai clinch",
       category: "Standing",
       description:
-        "Double collar tie / Thai plum. Elbows pinched, opponent's posture broken forward.",
+        "Muay Thai double collar tie clinch. Elbows pinched, opponent's posture broken forward.",
       scene: pair(
-        figure("a", "Athlete", "ally", [0, 0, 0.42], [0, 180, 0], [
+        figure("a", "Athlete", "ally", [0.11, -0.01, 0.19], [1, 180, 0], [
           STANCE,
           {
-            spine: [10, 0, 0],
-            upperArmL: [0, -84, -18],
-            forearmL: [0, -128, 0],
-            upperArmR: [0, 84, 18],
-            forearmR: [0, 128, 0],
+            spine: [9, 0, 0],
+            chest: [5, 0, -6],
+            clavicleL: [0, 0, -28],
+            upperArmL: [-6, -77, 31],
+            forearmL: [-33, -87, 12],
+            handL: [-25, 19, -75],
+            upperArmR: [-47, 106, -7],
+            forearmR: [-1, 74, 0],
+            handR: [-4, 35, 34],
           },
         ]),
-        figure("b", "Opponent", "opponent", [0, 0, -0.42], UPRIGHT, [
+        figure("b", "Opponent", "opponent", [-0.02, -0.01, -0.38], [0, 0, 0], [
           STANCE,
           {
             spine: [28, 0, 0],
             chest: [18, 0, 0],
             neck: [-24, 0, 0],
-            upperArmL: [0, -70, -46],
-            forearmL: [0, -96, 0],
-            upperArmR: [0, 70, 46],
-            forearmR: [0, 96, 0],
+            upperArmL: [-1, -54, 15],
+            forearmL: [0, -52, 0],
+            upperArmR: [-9, 88, -12],
+            forearmR: [0, 53, 0],
+            handR: [-45, 13, -75],
           },
         ]),
-        CAM_STAND,
+        { position: [0.1, 3.72, 1.73], target: [0, 1, 0] },
       ),
     },
 
