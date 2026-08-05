@@ -182,6 +182,28 @@ function FigureTransform() {
   return (
     <div className="space-y-3 px-3 py-3">
       <Slider
+        label="Slide left / right"
+        value={figure.position[0]}
+        min={-5}
+        max={5}
+        step={0.01}
+        unit="m"
+        onChange={(x) =>
+          setFigureTransform([x, figure.position[1], figure.position[2]], undefined)
+        }
+      />
+      <Slider
+        label="Slide forward / back"
+        value={figure.position[2]}
+        min={-5}
+        max={5}
+        step={0.01}
+        unit="m"
+        onChange={(z) =>
+          setFigureTransform([figure.position[0], figure.position[1], z], undefined)
+        }
+      />
+      <Slider
         label="Rotate on the mat"
         value={figure.rotation[1]}
         min={-180}
