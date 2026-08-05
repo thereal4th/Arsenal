@@ -43,3 +43,6 @@ next-env.d.ts
 # skills
 .agents
 .github
+
+FRONTEND.md
+BACKEND.md
