@@ -15,6 +15,7 @@ import {
   Sparkles,
   Undo2,
   X,
+  Ghost,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ export function EditorShell() {
   const showHandles = useEditor((s) => s.showHandles);
   const showGrid = useEditor((s) => s.showGrid);
   const collisionsEnabled = useEditor((s) => s.collisionsEnabled);
+  const dimInactiveFigure = useEditor((s) => s.dimInactiveFigure);
   const toggle = useEditor((s) => s.toggle);
   const loadedPresetName = useEditor((s) => s.loadedPresetName);
   const selectedBone = useEditor((s) => s.selectedBone);
@@ -154,6 +156,13 @@ export function EditorShell() {
           active={collisionsEnabled}
           onClick={() => toggle("collisionsEnabled")}
           icon={<Sparkles className="size-4" />}
+          className="hidden sm:inline-flex"
+        />
+        <ToolbarButton
+          label="Dim inactive figure"
+          active={dimInactiveFigure}
+          onClick={() => toggle("dimInactiveFigure")}
+          icon={<Ghost className="size-4" />}
           className="hidden sm:inline-flex"
         />
 

@@ -312,6 +312,7 @@ export function MannequinViewport({
   const showHandles = useEditor((s) => s.showHandles);
   const showGrid = useEditor((s) => s.showGrid);
   const isDragging = useEditor((s) => s.isDragging);
+  const dimInactiveFigure = useEditor((s) => s.dimInactiveFigure);
   const moveWholeFigure = useEditor((s) => s.moveWholeFigure);
   const selectBone = useEditor((s) => s.selectBone);
   const hoverBone = useEditor((s) => s.hoverBone);
@@ -381,7 +382,7 @@ export function MannequinViewport({
           >
             <Figure
               figure={figure}
-              dimmed={!preview && index !== activeFigure}
+              dimmed={!preview && dimInactiveFigure && index !== activeFigure}
               selectedBone={index === activeFigure ? selectedBone : null}
               hoveredBone={index === activeFigure ? hoveredBone : null}
               onSelectBone={preview ? undefined : selectBone}

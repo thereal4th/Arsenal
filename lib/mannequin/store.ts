@@ -37,6 +37,7 @@ interface EditorState {
   symmetry: boolean;
   showHandles: boolean;
   showGrid: boolean;
+  dimInactiveFigure: boolean;
   /** Suppresses OrbitControls while a gizmo or IK handle is being dragged. */
   isDragging: boolean;
 
@@ -72,7 +73,7 @@ interface EditorActions {
   setGizmoMode: (mode: GizmoMode) => void;
   setControlMode: (mode: ControlMode) => void;
   setMoveWholeFigure: (value: boolean) => void;
-  toggle: (key: "collisionsEnabled" | "symmetry" | "showHandles" | "showGrid") => void;
+  toggle: (key: "collisionsEnabled" | "symmetry" | "showHandles" | "showGrid" | "dimInactiveFigure") => void;
   setDragging: (value: boolean) => void;
 
   setCamera: (position: Vec3, target: Vec3) => void;
@@ -116,6 +117,7 @@ export const useEditor = create<EditorState & EditorActions>((set, get) => ({
   symmetry: false,
   showHandles: true,
   showGrid: true,
+  dimInactiveFigure: true,
   isDragging: false,
 
   loadedPresetName: null,

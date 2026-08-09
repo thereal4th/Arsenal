@@ -120,6 +120,7 @@ function BoneNode({
       >
         <capsuleGeometry args={[def.radius, limb.cylinder, 4, 14]} />
         <meshStandardMaterial
+          key={dimmed ? "dimmed" : "opaque"}
           color={isSelected ? palette.rim : palette.limb}
           roughness={0.62}
           metalness={0.08}
