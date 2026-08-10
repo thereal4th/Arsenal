@@ -191,8 +191,8 @@ export function resolveCollisions(
   let a = figures[0];
   let b = figures[1];
 
-  const aAnchored = opts.anchoredId === a.id;
-  const bAnchored = opts.anchoredId === b.id;
+  const aAnchored = opts.anchoredId === a.id || a.frozen;
+  const bAnchored = opts.anchoredId === b.id || b.frozen;
 
   // Weight the correction: an anchored figure absorbs none of the displacement.
   let wA = aAnchored ? 0 : 1;
