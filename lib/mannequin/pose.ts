@@ -40,6 +40,8 @@ export interface FigurePose {
   scale: number;
   /** Sparse map of bone -> euler degrees. Missing bones are at rest. */
   joints: Partial<Record<BoneId, Vec3>>;
+  /** Whether the figure is frozen in place */
+  frozen?: boolean;
 }
 
 export interface SceneCamera {
@@ -380,6 +382,7 @@ export function parseScene(input: unknown): SceneJSON | null {
       rotation: isVec3(f?.rotation) ? f.rotation : [0, 0, 0],
       scale: typeof f?.scale === "number" ? clamp(f.scale, 0.7, 1.4) : 1,
       joints,
+      frozen: typeof f?.frozen === "boolean" ? f.frozen : false,
     };
   });
 
