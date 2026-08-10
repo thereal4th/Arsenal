@@ -377,7 +377,7 @@ export function MannequinViewport({
           <group
             key={figure.id}
             onPointerDown={() => {
-              if (!preview && index !== activeFigure) setActiveFigure(index);
+              if (!preview && index !== activeFigure && !figure.frozen) setActiveFigure(index);
             }}
           >
             <Figure
@@ -385,19 +385,19 @@ export function MannequinViewport({
               dimmed={!preview && dimInactiveFigure && index !== activeFigure}
               selectedBone={index === activeFigure ? selectedBone : null}
               hoveredBone={index === activeFigure ? hoveredBone : null}
-              onSelectBone={preview ? undefined : selectBone}
-              onHoverBone={preview ? undefined : hoverBone}
+              onSelectBone={preview || figure.frozen ? undefined : selectBone}
+              onHoverBone={preview || figure.frozen ? undefined : hoverBone}
               registerBone={registerBone(index)}
               registerRoot={registerRoot(index)}
               showHandles={!preview && showHandles && index === activeFigure}
             />
-            {!preview && showHandles && index === activeFigure && (
+            {!preview && showHandles && index === activeFigure && !figure.frozen && (
               <IkHandles figure={figure} figureIndex={index} />
             )}
           </group>
         ))}
 
-        {!preview && <Gizmo target={gizmoTarget} />}
+        {!preview && !scene.figures[activeFigure]?.frozen && <Gizmo target={gizmoTarget} />}
 
         <OrbitControls
           enabled={!isDragging}
