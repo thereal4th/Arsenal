@@ -73,6 +73,7 @@ interface EditorActions {
   setGizmoMode: (mode: GizmoMode) => void;
   setControlMode: (mode: ControlMode) => void;
   setMoveWholeFigure: (value: boolean) => void;
+  toggleFigureFrozen: (index: number) => void; //index represents an individual mannequin for lookups to toggle freeze state, can be 0 or 1.
   toggle: (key: "collisionsEnabled" | "symmetry" | "showHandles" | "showGrid" | "dimInactiveFigure") => void;
   setDragging: (value: boolean) => void;
 
@@ -240,6 +241,21 @@ export const useEditor = create<EditorState & EditorActions>((set, get) => ({
   setGizmoMode: (gizmoMode) => set({ gizmoMode }),
   setControlMode: (controlMode) => set({ controlMode }),
   setMoveWholeFigure: (moveWholeFigure) => set({ moveWholeFigure }),
+
+  toggleFigureFrozen: (index) => {
+    get().commit(); // save undo state before changing
+    set((state) => {
+      const figures = state.scene.figures.map((f, i) => 
+        i === index? {...f, frozen: !f.frozen} : f
+      );
+
+      //settle and resolve potential collisions
+      const next = settle({...state.scene, figures}, state.activeFigure, state.collisionsEnabled);
+      return {scene: next, dirty: true}
+    })
+
+  },
+
   toggle: (key) => set((state) => ({ [key]: !state[key] }) as Partial<EditorState>),
   setDragging: (isDragging) => set({ isDragging }),
 
