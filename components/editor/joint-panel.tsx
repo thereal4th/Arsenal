@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, FlipHorizontal2, Move3d, RotateCcw, Anchor } from "lucide-react";
+import { ChevronDown, FlipHorizontal2, Move3d, RotateCcw, Anchor, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -265,6 +265,7 @@ export function JointPanel() {
   const setControlMode = useEditor((s) => s.setControlMode);
   const symmetry = useEditor((s) => s.symmetry);
   const toggle = useEditor((s) => s.toggle);
+  const toggleFigureFrozen = useEditor((s) => s.toggleFigureFrozen);
   const moveWholeFigure = useEditor((s) => s.moveWholeFigure);
   const setMoveWholeFigure = useEditor((s) => s.setMoveWholeFigure);
   const resetFigurePose = useEditor((s) => s.resetFigurePose);
@@ -287,28 +288,42 @@ export function JointPanel() {
           className="grid grid-cols-2 gap-1 rounded-[8px] bg-[var(--bg-inset)] p-1"
         >
           {scene.figures.map((figure, index) => (
-            <button
-              key={figure.id}
-              role="tab"
-              aria-selected={activeFigure === index}
-              onClick={() => setActiveFigure(index)}
-              className={cn(
-                "flex items-center justify-center gap-1.5 rounded-[6px] px-2 py-1.5",
-                "text-[0.8125rem] transition-colors duration-200",
-                activeFigure === index
-                  ? "bg-[var(--bg-elev-3)] text-[var(--fg)]"
-                  : "text-[var(--fg-muted)] hover:text-[var(--fg)]",
-              )}
-            >
-              <span
-                className="size-2 rounded-full"
-                style={{
-                  backgroundColor: figure.role === "ally" ? "#9fb0c6" : "#a8453f",
-                }}
-                aria-hidden
-              />
-              {figure.label}
-            </button>
+            <div key={figure.id} className="flex gap-1">
+              <button
+                role="tab"
+                aria-selected={activeFigure === index}
+                onClick={() => setActiveFigure(index)}
+                className={cn(
+                  "flex items-center justify-center gap-1.5 rounded-[6px] px-2 py-1.5",
+                  "text-[0.8125rem] transition-colors duration-200",
+                  activeFigure === index
+                    ? "bg-[var(--bg-elev-3)] text-[var(--fg)]"
+                    : "text-[var(--fg-muted)] hover:text-[var(--fg)]",
+                )}
+              >
+                <span
+                  className="size-2 rounded-full"
+                  style={{
+                    backgroundColor: figure.role === "ally" ? "#9fb0c6" : "#a8453f",
+                  }}
+                  aria-hidden
+                />
+                {figure.label}
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleFigureFrozen(index)}
+                title={figure.frozen ? "Unfreeze mannequin" : "Freeze mannequin"}
+                className={cn(
+                  "flex shrink-0 items-center justify-center w-8 rounded-[6px] transition-colors",
+                  figure.frozen 
+                    ? "bg-[var(--accent-soft)] text-[var(--accent)]" 
+                    : "text-[var(--fg-muted)] hover:bg-[var(--bg-elev-2)] hover:text-[var(--fg)]"
+                )}
+              >
+                <Lock className="size-3.5" aria-hidden />
+              </button>
+            </div>
           ))}
         </div>
 
@@ -371,44 +386,54 @@ export function JointPanel() {
 
       {/* Scrolling body */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        <div className="border-b border-[var(--border)]">
-          <div className="flex items-center justify-between px-3 pt-3">
-            <SectionLabel>Joint</SectionLabel>
-            <Badge tone="accent">{controlMode}</Badge>
+        {scene.figures[activeFigure]?.frozen ? (
+          <div className="flex h-full flex-col items-center justify-center space-y-3 p-6 text-center text-[var(--fg-muted)]">
+            <Lock className="size-8 opacity-20" />
+            <p className="text-[0.8125rem]">This mannequin is frozen.</p>
+            <p className="text-xs text-[var(--fg-subtle)]">Unfreeze it from the panel above to edit its pose or placement.</p>
           </div>
-          <SelectedJointControls />
-        </div>
+        ) : (
+          <>
+            <div className="border-b border-[var(--border)]">
+              <div className="flex items-center justify-between px-3 pt-3">
+                <SectionLabel>Joint</SectionLabel>
+                <Badge tone="accent">{controlMode}</Badge>
+              </div>
+              <SelectedJointControls />
+            </div>
 
-        <div className="border-b border-[var(--border)]">
-          <SectionLabel className="px-3 pt-3">Joints by region</SectionLabel>
-          <div className="mt-1">
-            {bonesByGroup.map(({ group, bones }) => (
-              <GroupSection
-                key={group}
-                group={group}
-                bones={bones}
-                expanded={expanded === group}
-                onToggle={() => setExpanded(expanded === group ? null : group)}
-              />
-            ))}
-          </div>
-        </div>
+            <div className="border-b border-[var(--border)]">
+              <SectionLabel className="px-3 pt-3">Joints by region</SectionLabel>
+              <div className="mt-1">
+                {bonesByGroup.map(({ group, bones }) => (
+                  <GroupSection
+                    key={group}
+                    group={group}
+                    bones={bones}
+                    expanded={expanded === group}
+                    onToggle={() => setExpanded(expanded === group ? null : group)}
+                  />
+                ))}
+              </div>
+            </div>
 
-        <div>
-          <SectionLabel className="px-3 pt-3">Figure placement</SectionLabel>
-          <FigureTransform />
-        </div>
+            <div>
+              <SectionLabel className="px-3 pt-3">Figure placement</SectionLabel>
+              <FigureTransform />
+            </div>
 
-        <div className="p-3">
-          <Button
-            variant="danger"
-            size="sm"
-            className="w-full"
-            onClick={resetFigurePose}
-          >
-            Reset this figure to neutral
-          </Button>
-        </div>
+            <div className="p-3">
+              <Button
+                variant="danger"
+                size="sm"
+                className="w-full"
+                onClick={resetFigurePose}
+              >
+                Reset this figure to neutral
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
