@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useThree, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { ContactShadows, Environment, Grid, OrbitControls, TransformControls } from "@react-three/drei";
 import { Plane, Vector3, type Group, type Object3D } from "three";
 import { RAD } from "@/lib/utils";
@@ -267,7 +267,7 @@ function CaptureBridge({ onReady }: { onReady: (capture: CaptureFn) => void }) {
 }
 
 /* ========================================================================== */
-/* Camera sync                                                                */
+/* Camera sync & keyboard controls                                            */
 /* ========================================================================== */
 
 function CameraSync({ camera: cameraState }: { camera: SceneJSON["camera"] }) {
@@ -281,6 +281,98 @@ function CameraSync({ camera: cameraState }: { camera: SceneJSON["camera"] }) {
     camera.position.set(...cameraState.position);
     camera.lookAt(...cameraState.target);
   }, [cameraState, camera]);
+
+  return null;
+}
+
+function CameraKeyboardControls({ preview }: { preview?: boolean }) {
+  // Grab the active Three.js camera and the OrbitControls instance
+  const { camera, controls } = useThree();
+  // Connect to Zustand state to save camera position when movement stops
+  const setCamera = useEditor((s) => s.setCamera);
+
+  // We use refs instead of useState so we don't trigger React re-renders every time a key is pressed
+  const keys = useRef<{ [key: string]: boolean }>({});
+  const hasMoved = useRef(false);
+
+  useEffect(() => {
+    // Disable WASD completely if the app is in "preview" mode
+    if (preview) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      const active = document.activeElement as HTMLElement;
+      // Ignore key presses if the user is typing in an input box or text area
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) {
+        return;
+      }
+      keys.current[e.key.toLowerCase()] = true; // Mark key as pressed
+    };
+
+    const onKeyUp = (e: KeyboardEvent) => {
+      keys.current[e.key.toLowerCase()] = false; // Mark key as released
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+
+    // Cleanup listeners on unmount
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, [preview]);
+
+  // useFrame executes its code right before every single frame is drawn (e.g. 60 times a second)
+  useFrame((_, delta) => {
+    if (preview || !controls) return;
+
+    // Base speed: 4 units per second, scaled by delta time for consistent speed across monitor refresh rates
+    let speed = 4 * delta;
+    if (keys.current["shift"]) speed *= 2.5; // Sprint modifier
+
+    // Calculate a flat "Right" vector pointing out the right side of the camera lens
+    const right = new Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+    right.y = 0; // Crush the vertical axis so pressing 'D' slides sideways, not diagonally into the sky
+    
+    if (right.lengthSq() > 0.0001) {
+      right.normalize(); // Stretch the flattened vector back to length 1
+    } else {
+      right.set(1, 0, 0); // Failsafe if looking perfectly straight down
+    }
+
+    // Cross the world's perfect "Up" with our flat "Right" vector to get a perfect, flat "Forward"
+    const forward = new Vector3().crossVectors(new Vector3(0, 1, 0), right).normalize();
+    
+    const movement = new Vector3(); // Start with zero movement
+
+    // Accumulate the movement vector based on which keys are held
+    if (keys.current["w"]) movement.add(forward);
+    if (keys.current["s"]) movement.sub(forward);
+    if (keys.current["a"]) movement.sub(right);
+    if (keys.current["d"]) movement.add(right);
+    if (keys.current["q"]) movement.y += 1; // Pure vertical Up
+    if (keys.current["e"]) movement.y -= 1; // Pure vertical Down
+
+    if (movement.lengthSq() > 0) {
+      // Normalizing prevents diagonal movement (holding W+D) from being faster than moving straight
+      movement.normalize().multiplyScalar(speed);
+      
+      // Move both the camera AND the invisible point it pivots around (target) by the exact same distance
+      camera.position.add(movement);
+      (controls as any).target.add(movement);
+      (controls as any).update(); // Tell OrbitControls to process the math changes
+      
+      hasMoved.current = true; // Track that we moved this frame
+    } else if (hasMoved.current) {
+      // If we didn't move this frame, but moved LAST frame, this is the exact moment the user stopped.
+      hasMoved.current = false;
+      
+      // Convert Three.js coordinates to plain arrays and save to the global app state
+      const pos = camera.position.toArray() as Vec3;
+      const tgt = (controls as any).target.toArray() as Vec3;
+      setCamera(pos, tgt);
+    }
+  });
 
   return null;
 }
@@ -371,6 +463,7 @@ export function MannequinViewport({
       >
         <Stage showGrid={!preview && showGrid} />
         <CameraSync camera={scene.camera} />
+        <CameraKeyboardControls preview={preview} />
         {onCaptureReady && <CaptureBridge onReady={onCaptureReady} />}
 
         {scene.figures.map((figure, index) => (
