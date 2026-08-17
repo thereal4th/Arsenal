@@ -16,6 +16,7 @@ import {
   Undo2,
   X,
   Ghost,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,10 +49,25 @@ export function EditorShell() {
   const [rightOpen, setRightOpen] = useState(false);
 
   const onCaptureReady = useCallback((fn: CaptureFn) => {
-    captureRef.current = fn;
+    captureRef.current = fn;  
   }, []);
 
   const capture = useCallback(() => captureRef.current?.() ?? null, []);
+
+  //image download handler 
+  const handleDownloadImage = useCallback(() => {
+
+    const dataUrl = capture();
+    if (!dataUrl) return;
+
+    const a = document.createElement("a");
+    a.href = dataUrl;
+
+    a.download = `technique-${Date.now()}.png`;
+
+    a.click();
+    a.remove();
+  }, [capture])
 
   // Keyboard shortcuts. Ignored while typing so they never eat form input.
   useEffect(() => {
@@ -167,6 +183,12 @@ export function EditorShell() {
         />
 
         <div className="ml-auto flex items-center gap-2">
+
+          <Button size="sm" onClick={handleDownloadImage}>
+            <Camera className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Download as png</span>
+          </Button>
+
           <Button size="sm" onClick={() => setCaptureOpen(true)}>
             <Camera className="size-3.5" aria-hidden />
             <span className="hidden sm:inline">Capture to note</span>
